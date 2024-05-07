@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consumir API Flask</title>
+</head>
+<body>
+    <h1>Consumir API Flask</h1>
+    <button onclick="fazerRequisicao()">Fazer Solicitação</button>
+
+    <div id="resultado"></div>
+
+
+
+    <!-- Div para exibir a imagem base64 -->
+    <div id="imagem1"></div>
+    <div id="imagem2"></div>
+    
+
+    <script>
+        async function fazerRequisicao() {
+            // Defina os dados que deseja enviar para a API
+            var data = {
+                sex: "Male",
+                redo: "Yes",
+                cpb: "Yes",
+                age: 40,
+                bsa: 1.70,
+                hb: 12.00
+            };
+            const request = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                body: JSON.stringify(data)
+            }
+            
+            const response = await fetch("http://127.0.0.1:5000/patient/predict/", request);
+            if (response.status == 200){
+                const resposta = await response.json()
+                document.getElementById("imagem1").innerHTML = '<img src="data:image/png;base64,' + resposta.probabilities_chart + '" />';
+                document.getElementById("imagem2").innerHTML = '<img src="data:image/png;base64,' + resposta.lime_image + '" />';
+            }
+        }
+    </script>
+</body>
+</html>

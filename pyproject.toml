@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "pibic-bpt"
+version = "0.1.0"
+description = ""
+authors = ["JairAssisDev <jairv141@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^3.0.3"
+flask-cors = "^4.0.1"
+matplotlib = "^3.8.4"
+joblib = "^1.4.2"
+uvicorn = "^0.29.0"
+lime = "^0.2.0.1"
+pandas = "^2.2.2"
+pydantic = "^2.7.1"
+imblearn = "^0.0"
+scikit-learn = "1.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
