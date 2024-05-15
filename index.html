@@ -5,6 +5,14 @@
 </head>
 <body>
     <h1>Consumir API Flask</h1>
+    <input type="text" id="sex" placeholder="">
+    <input type="text" id="redo" placeholder="">
+    <input type="text" id="cpb" placeholder="">
+    <input type="number" id="age" placeholder="">
+    <input type="number" id="bsa" placeholder="">
+    <input type="number" id="hb" placeholder="">
+
+
     <button onclick="fazerRequisicao()">Fazer Solicitação</button>
 
     <div id="resultado"></div>
@@ -12,20 +20,26 @@
 
 
     <!-- Div para exibir a imagem base64 -->
-    <div id="imagem1"></div>
-    <div id="imagem2"></div>
-    
+    <div id="imagem1"></div>    
 
     <script>
         async function fazerRequisicao() {
             // Defina os dados que deseja enviar para a API
+            var sex = document.getElementById("sex").value;
+            var redo = document.getElementById("redo").value;
+            var cpb = document.getElementById("cpb").value;
+            var age = parseFloat(document.getElementById("age").value);
+            var bsa = parseFloat(document.getElementById("bsa").value);
+            var hb = parseFloat(document.getElementById("hb").value);
+
             var data = {
-                sex: "Male",
-                redo: "Yes",
-                cpb: "Yes",
-                age: 40,
-                bsa: 1.70,
-                hb: 12.00
+                sex: sex,
+                redo: redo,
+                cpb: cpb,
+                age: age,
+                bsa: bsa,
+                hb: hb
+                
             };
             const request = {
                 method: "POST",
@@ -38,8 +52,7 @@
             const response = await fetch("http://127.0.0.1:5000/patient/predict/", request);
             if (response.status == 200){
                 const resposta = await response.json()
-                document.getElementById("imagem1").innerHTML = '<img src="data:image/png;base64,' + resposta.probabilities_chart + '" />';
-                document.getElementById("imagem2").innerHTML = '<img src="data:image/png;base64,' + resposta.lime_image + '" />';
+                document.getElementById("imagem1").innerHTML = '<img src="data:image/png;base64,' + resposta.lime_image + '" />';
             }
         }
     </script>
