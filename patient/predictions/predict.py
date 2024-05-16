@@ -55,7 +55,7 @@ def predict_and_explain(sex, redo, cpb, age, bsa, hb):
     
     prediction = bool(model.predict([instance])[0])
     true_prob = prediction_proba[1]
-    false_prob = prediction_proba[0]
+    #false_prob = prediction_proba[0]
     
     exp = explain_instance(instance)
     features, values = prepare_features_and_values(exp)
@@ -67,7 +67,7 @@ def predict_and_explain(sex, redo, cpb, age, bsa, hb):
     return {
         "prediction": prediction,
         "true_probability": true_prob,
-        "false_probability": false_prob,
+        #"false_probability": false_prob,
         "lime_image": image_data_explanation["image_base64"]
     }
 

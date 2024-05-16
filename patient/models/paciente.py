@@ -1,4 +1,5 @@
 from pydantic import BaseModel, validator
+from typing import Optional
 
 class Paciente(BaseModel):
     id: int
@@ -10,6 +11,9 @@ class Paciente(BaseModel):
     age: int
     bsa: float
     hb: float
+    probability: Optional[float] = None
+    prediction: Optional[float] = None
+    imagem:Optional[str] = None
     
 
     @validator('sex', 'redo', 'cpb')
