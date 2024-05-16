@@ -1,5 +1,5 @@
 from patient.services.service import PacienteService
-from patient.entities.paciente import Paciente
+from patient.models.paciente import Paciente
 from patient.predictions.predict import predict_and_explain
 from flask import jsonify
 
@@ -9,10 +9,12 @@ class PacienteServiceImpl(PacienteService):
 
     def criar_paciente(self, dados_paciente):
         paciente = Paciente(**dados_paciente)
-        self.pacientes.append(paciente.dict())
+        self.pacientes.append(paciente.model_dump())
+        print(self.pacientes)
 
     def obter_todos_pacientes(self):
         return self.pacientes
+    
 
     def obter_paciente_por_nome(self, nome):
         return next((p for p in self.pacientes if p['nome'] == nome), None)
