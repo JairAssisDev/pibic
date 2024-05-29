@@ -8,14 +8,12 @@
 
 <body>
     <h1>Consumir API Flask</h1>
-    <label for="id">id:</label>
-    <input type="number" id="id" placeholder="id"><br><br>
 
-    <label for="nome">nome:</label>
-    <input type="text" id="nome" placeholder="nome"><br><br>
+    <label for="nome">Nome:</label>
+    <input type="text" id="nome" placeholder="Nome"><br><br>
 
-    <label for="cpf">cpf:</label>
-    <input type="text" id="cpf" placeholder="cpf"><br><br>
+    <label for="cpf">CPF:</label>
+    <input type="text" id="cpf" placeholder="CPF"><br><br>
 
     <label for="sex">Sexo:</label>
     <input type="number" id="sex" placeholder="Sexo"><br><br>
@@ -35,17 +33,17 @@
     <label for="hb">HB:</label>
     <input type="number" id="hb" placeholder="HB"><br><br>
 
-    <button onclick="cadastrar_paciente()">Cadastrar paciente</button>
+    <button onclick="cadastrarPaciente()">Cadastrar paciente</button>
 
     <div id="resultado"></div>
     <br>
     <br>
 
-    <h1>prever por paciente</h1>
+    <h1>Prever informações do paciente</h1>
 
-    <label for="nome">Nome do paciente:</label>
-    <input type="text" id="nome_paciente" placeholder="nome_paciente"><br><br>
-    <button onclick="prever()">prever info paciente</button>
+    <label for="nome_paciente">Nome do paciente:</label>
+    <input type="text" id="nome_paciente" placeholder="Nome do paciente"><br><br>
+    <button onclick="prever()">Prever informações do paciente</button>
     <!-- Div para exibir a imagem base64 -->
 
     <div id="true_probability"></div>
@@ -56,9 +54,8 @@
 
 
     <script>
-        async function cadastrar_paciente() {
+        async function cadastrarPaciente() {
             // Obter os valores dos campos de entrada
-            var id = parseInt(document.getElementById("id").value);
             var nome = document.getElementById("nome").value;
             var cpf = document.getElementById("cpf").value;
             var sex = parseInt(document.getElementById("sex").value);
@@ -70,7 +67,6 @@
 
             // Construir o objeto de dados
             var data = {
-                "id": id,
                 "nome": nome,
                 "cpf": cpf,
                 "sex": sex,
@@ -82,56 +78,47 @@
             };
 
             try {
-
-                const response = await axios.post("http://127.0.0.1:5000/patient", data);
+                const response = await axios.post("http://127.0.0.1:5000/paciente", data);
 
                 if (response.status == 201) {
-                    document.getElementById("resultado").innerText = "Success: " + response.data.mensagem;
+                    document.getElementById("resultado").innerText = "Paciente criado com sucesso";
+                    // Após criar o paciente com sucesso, faz a previsão
+                    await prever();
                 } else {
-                    document.getElementById("resultado").innerText = "Erro: " + response.statusText;
+                    document.getElementById("resultado").innerText = "Erro ao criar paciente: " + response.statusText;
                 }
             } catch (error) {
                 console.error("Erro ao fazer a requisição:", error);
             }
         }
 
-        // Corrigindo a função prever()
         async function prever() {
             var nome = document.getElementById("nome_paciente").value;
             try {
-                const response = await axios.get("http://127.0.0.1:5000/patient/predict/" + nome);
+                const response = await axios.get("http://127.0.0.1:5000/paciente/nome/" + nome);
 
                 if (response.status == 200) {
                     console.log(response.data.prediction);
 
-                    // Verifica se o elemento "prediction" existe
-                    var predictionElement = document.getElementById("true_probability");
+                    // Exibir as informações da previsão
                     var predictionElement = document.getElementById("prediction");
-                    if (predictionElement) {
-                        predictionElement.innerText = "Success: " + response.data.prediction.true_probability;
-                        predictionElement.innerText = "Classe: " + response.data.prediction.prediction;
-                    } else {
-                        console.error("Elemento 'prediction' não encontrado.");
-                    }
-
-                    const image = response.data.prediction.lime_image;
-                    console.log(image);
-
-                    // Verifica se o elemento "prediction_image" existe
+                    var trueProbabilityElement = document.getElementById("true_probability");
                     var predictionImageElement = document.getElementById("prediction_image");
-                    if (predictionImageElement) {
-                        predictionImageElement.src = 'data:image/jpeg;base64,' + image;
+
+                    if (predictionElement && trueProbabilityElement && predictionImageElement) {
+                        predictionElement.innerText = "Classe: " + response.data.prediction;
+                        trueProbabilityElement.innerText = "Probabilidade: " + response.data.true_probability;
+                        predictionImageElement.src = 'data:image/jpeg;base64,' + response.data.imagem;
                     } else {
-                        console.error("Elemento 'prediction_image' não encontrado.");
+                        console.error("Elemento 'prediction' ou 'true_probability' ou 'prediction_image' não encontrado.");
                     }
                 } else {
-                    document.getElementById("resultado_predict").innerText = "Erro: " + response;
+                    console.error("Erro ao obter previsão:", response.statusText);
                 }
             } catch (error) {
                 console.error("Erro ao fazer a requisição:", error);
             }
         }
-
     </script>
 </body>
 

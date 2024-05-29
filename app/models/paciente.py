@@ -12,7 +12,8 @@ class Paciente(db.Model):
     hb = db.Column(db.Float, nullable=False)
     probability = db.Column(db.Float, nullable=True)
     prediction = db.Column(db.Float, nullable=True)
-    imagem = db.Column(db.String(255), nullable=True)
+    imagem = db.Column(db.Text, nullable=True)
+
 
     def __repr__(self):
         return f'<Paciente {self.nome}>'

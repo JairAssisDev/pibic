@@ -1,27 +1,44 @@
 from flask import Blueprint, request, jsonify
 from app.models.paciente import Paciente
 from app import db
+from app.predictions.predict import predict_and_explain
+import json
 
 paciente_bp = Blueprint('paciente', __name__, url_prefix='/paciente')
 
-@paciente_bp.route("/", methods=["POST"])
+@paciente_bp.route("", methods=["POST"])
 def create_paciente():
     data = request.get_json()
     try:
         new_paciente = Paciente(**data)
         db.session.add(new_paciente)
         db.session.commit()
+
+        dados = predict_and_explain(new_paciente.sex, new_paciente.redo, new_paciente.cpb, new_paciente.age, new_paciente.bsa, new_paciente.hb)
+        lime_image = dados["lime_image"]
+        prediction = dados["prediction"]
+        true_probability = dados["true_probability"]
+
+        new_paciente.probability = true_probability
+        new_paciente.prediction = prediction
+        new_paciente.imagem = lime_image
+
+        db.session.commit()
+
         return jsonify({'message': 'Paciente criado com sucesso'}), 201
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
-@paciente_bp.route("/", methods=["GET"])
+
+
+@paciente_bp.route("/getallpacientes", methods=["GET"])
 def get_all_pacientes():
     pacientes = Paciente.query.all()
     pacientes_data = [{'id': paciente.id, 'nome': paciente.nome, 'cpf': paciente.cpf, 'sex': paciente.sex,
-                       'redo': paciente.redo, 'cpb': paciente.cpb, 'age': paciente.age, 'bsa': paciente.bsa,
-                       'hb': paciente.hb, 'probability': paciente.probability, 'prediction': paciente.prediction,
-                       'imagem': paciente.imagem} for paciente in pacientes]
+                    'redo': paciente.redo, 'cpb': paciente.cpb, 'age': paciente.age, 'bsa': paciente.bsa,
+                    'hb': paciente.hb, 'probability': paciente.probability, 'prediction': paciente.prediction,
+                    'imagem': paciente.imagem} for paciente in pacientes]
     return jsonify(pacientes_data)
 
 @paciente_bp.route("/<int:paciente_id>", methods=["GET"])
@@ -69,14 +86,36 @@ def delete_paciente(paciente_id):
     else:
         return jsonify({'message': 'Paciente não encontrado'}), 404
 
-@paciente_bp.route('/test', methods=["GET"])
-def test():
-    novo_paciente = Paciente(nome='Novo Paciente', cpf='12345678901', sex=1, redo=0, cpb=1, age=30, bsa=1.5, hb=14.2, probability=0.8, prediction=1.0, imagem='imagem.jpg')
+@paciente_bp.route("/predict/<string:paciente_nome>", methods=["GET"])
+def predict_paciente_by_name(paciente_nome):
+    paciente = Paciente.query.filter_by(nome=paciente_nome).first()
+    if paciente:
+        dados = predict_and_explain(paciente.sex, paciente.redo, paciente.cpb, paciente.age, paciente.bsa, paciente.hb)
+        lime_image = dados["lime_image"]
+        prediction = dados["prediction"]
+        true_probability = dados["true_probability"]
 
-    # Adicionando o novo paciente ao banco de dados
-    db.session.add(novo_paciente)
+        paciente.probability = true_probability
+        paciente.prediction = prediction
+        paciente.imagem = lime_image
+        db.session.commit()
+        paciente = Paciente.query.filter_by(nome=paciente_nome).first()
+        return jsonify({'id': paciente.id, 'nome': paciente.nome, 'cpf': paciente.cpf, 'sex': paciente.sex,
+                        'redo': paciente.redo, 'cpb': paciente.cpb, 'age': paciente.age, 'bsa': paciente.bsa,
+                        'hb': paciente.hb, 'probability': paciente.probability, 'prediction': paciente.prediction,
+                        'imagem': paciente.imagem})
+    else:
+        return jsonify({'message': 'Paciente não encontrado'}), 404
 
-    # Commitando a transação para efetivar as mudanças no banco de dados
-    db.session.commit()
+@paciente_bp.route("/nome/<string:paciente_nome>", methods=["GET"])
+def get_paciente_by_name(paciente_nome):
+    paciente = Paciente.query.filter_by(nome=paciente_nome).first()
+    if paciente:
+        return jsonify({'id': paciente.id, 'nome': paciente.nome, 'cpf': paciente.cpf, 'sex': paciente.sex,
+                        'redo': paciente.redo, 'cpb': paciente.cpb, 'age': paciente.age, 'bsa': paciente.bsa,
+                        'hb': paciente.hb, 'probability': paciente.probability, 'prediction': paciente.prediction,
+                        'imagem': paciente.imagem})
+    else:
+        return jsonify({'message': 'Paciente não encontrado'}), 404
 
-    return {"Paciente criado com sucesso!"}
+

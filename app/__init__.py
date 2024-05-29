@@ -16,9 +16,7 @@ def create_app():
     with app.app_context():
         # Importar modelos e blueprints
         from app.controllers.controlerpatient import paciente_bp
-        from app.controllers.user_controller import user_bp
 
-        app.register_blueprint(user_bp)
         app.register_blueprint(paciente_bp)
 
         # Criar as tabelas no banco de dados (caso necessário)
