@@ -1,4 +1,4 @@
-# Use a imagem base do Python 3.11
+# Usa a imagem base do Python 3.11
 FROM python:3.11
 
 # Define o diretório de trabalho dentro do contêiner
@@ -20,5 +20,8 @@ RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev
 
 
-# Comando para iniciar a sua aplicação FastAPI
-CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "5000"]
+# Expondo a porta 5000 (porta padrão do Flask)
+EXPOSE 5000
+
+# Comando de execução do Gunicorn
+CMD ["gunicorn", "-w", "4", "-b", "5000:5000", "run:app"]
