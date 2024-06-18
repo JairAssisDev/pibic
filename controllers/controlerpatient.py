@@ -1,6 +1,4 @@
 from entities.paciente import Paciente
-import numpy as np
-import json
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 from predictions.predict import predict_and_explain
@@ -20,9 +18,7 @@ def create_paciente():
         instance.prediction = dados["prediction"]
         instance.imagem = dados["lime_image"]
         insert_paciente(instance)
-
         return jsonify({'message': 'Paciente criado com sucesso'}), 201
-
     except ValidationError as e:
         return jsonify({'message': 'Erro na validação dos dados', 'error': e.errors()}), 422
     except Exception as e:
@@ -61,24 +57,27 @@ def delete_paciente(nome,cpf):
 
 
 @paciente_bp.route("/<nome>/<cpf>", methods=["PUT"])
-def use_update_paciente(nome,cpf):
+def use_update_paciente(nome, cpf):
     data = request.get_json()
-    paciente = verificar_paciente(nome,cpf)
-    if paciente:
-        try:
-            data = request.get_json()
-            instance = Paciente(**data)
-            
-            instance.nome = instance.nome.lower()
-            dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
-            instance.probability = dados["true_probability"]
-            instance.prediction = dados["prediction"]
-            instance.imagem = dados["lime_image"]
-            update_paciente(nome,cpf,instance)
-            paciente = get_by_name_cpf(nome,cpf)
-            if paciente:
-                return jsonify({"message":paciente}),200 
-        except Exception as e:
-            return jsonify({'error': str(e)}), 400
-    else:
+    paciente = verificar_paciente(nome, cpf)
+    if not paciente:
         return jsonify({'message': 'Paciente não encontrado'}), 404
+
+    try:
+        patient_data = Paciente(**data)
+        patient_data.nome = patient_data.nome.lower()
+        dados = predict_and_explain(patient_data.sex, patient_data.redo, patient_data.cpb, patient_data.age, patient_data.bsa, patient_data.hb)
+        patient_data.probability = dados["true_probability"]
+        patient_data.prediction = dados["prediction"]
+        patient_data.imagem = dados["lime_image"]
+        update_paciente(nome, cpf, patient_data)
+        response_data = {
+            "message": "Paciente atualizado com sucesso",
+            "data": dados
+        }
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(f"Error updating patient: {e}")
+        return jsonify({'error': "Erro ao atualizar paciente:"+str(e)}), 400
+
