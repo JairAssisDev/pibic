@@ -82,18 +82,3 @@ def use_update_paciente(nome,cpf):
             return jsonify({'error': str(e)}), 400
     else:
         return jsonify({'message': 'Paciente não encontrado'}), 404
-
-'''
-
-@paciente_bp.route("/nome/<string:paciente_nome>", methods=["GET"])
-def get_paciente_by_name(paciente_nome):
-    paciente = Paciente.query.filter_by(nome=paciente_nome).first()
-    if paciente:
-        return jsonify({'id': paciente.id, 'nome': paciente.nome, 'cpf': paciente.cpf, 'sex': paciente.sex,
-                        'redo': paciente.redo, 'cpb': paciente.cpb, 'age': paciente.age, 'bsa': paciente.bsa,
-                        'hb': paciente.hb, 'probability': paciente.probability, 'prediction': paciente.prediction,
-                        'imagem': paciente.imagem})
-    else:
-        return jsonify({'message': 'Paciente não encontrado'}), 404
-
-'''
