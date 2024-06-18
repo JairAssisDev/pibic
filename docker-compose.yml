@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+
+  api:
+    build: .
+    volumes:
+      - .:/code
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      
+  db:
+    image: mysql
+    volumes:
+      - ./init_db_paciente.sql:/docker-entrypoint-initdb.d/init_db_paciente.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: IFPEBPT
+      MYSQL_USER: IFPEBPT
+      MYSQL_PASSWORD: IFPEBPT      
+    restart: always
+    ports:
+      - "3306:3306"
+  
+
