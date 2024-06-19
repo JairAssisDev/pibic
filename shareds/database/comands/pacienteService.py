@@ -1,4 +1,4 @@
-from database.conn import get_connection
+from shareds.database.conn import get_connection
 from flask import jsonify
 from entities.paciente import Paciente
 

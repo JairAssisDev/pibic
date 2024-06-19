@@ -2,7 +2,7 @@ from entities.paciente import Paciente
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 from predictions.predict import predict_and_explain
-from database.comands.pacienteService import *
+from shareds.database.comands.pacienteService import *
 
 paciente_bp = Blueprint('paciente', __name__, url_prefix='/paciente')
 
