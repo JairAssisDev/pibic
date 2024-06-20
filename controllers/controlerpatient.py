@@ -1,3 +1,5 @@
+import csv
+from io import StringIO
 from entities.paciente import Paciente
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
@@ -80,4 +82,45 @@ def use_update_paciente(nome, cpf):
     except Exception as e:
         print(f"Error updating patient: {e}")
         return jsonify({'error': "Erro ao atualizar paciente:"+str(e)}), 400
+
+
+@paciente_bp.route("/uploadcsv", methods=["POST"])
+def use_set_pacientes_com_cvs():
+    try:
+
+        file = request.files['file']
+
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        file_data = file.read().decode('utf-8')
+
+        csv_data = StringIO(file_data)
+
+        reader = csv.reader(csv_data)
+        for row in reader:
+            if row[0] == 'nome':
+                continue
+            print(row[0])
+            data={
+                "nome": str(row[0]),
+                "cpf": str(row[1]),
+                "sex": int(row[2]),
+                "redo": int(row[3]),
+                "cpb": int(row[4]),
+                "age": int(row[5]),
+                "bsa": float(row[6]),
+                "hb": float(row[7])
+        }
+            instance = Paciente(**data)            
+            instance.nome = instance.nome.lower()
+            dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
+            instance.probability = dados["true_probability"]
+            instance.prediction = dados["prediction"]
+            instance.imagem = dados["lime_image"]
+            insert_paciente(instance)
+
+        return jsonify({"message": "Arquivo resultado.csv salvo com sucesso!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 

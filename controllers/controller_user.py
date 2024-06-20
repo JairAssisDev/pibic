@@ -17,13 +17,13 @@ def autenticar_usuario():
     if len(usuario_encontrado) > 0:
         senha_encriptada = usuario_encontrado[0]["password"]
         if not check_password(usuario.password, senha_encriptada):
-            return jsonify({"status_code": 401, "content": {"User": "not found"}})
+            return jsonify({"content": {"User": "not found"}}),401
         nome_usuario = usuario_encontrado[0]["username"]
         instancia = {"userName": nome_usuario, "matricula": usuario.matricula}    
         token = encode(UserBase.parse_obj(instancia))
-        return jsonify({"status_code": 200, "content": { "token": token }})
+        return jsonify({"content": { "token": token }}),200 
     else:
-        return jsonify({"status_code": 401, "content": {"User": "not found"}})
+        return jsonify({"content": {"User": "not found"}}),401
 
 @user_bp.route("/create", methods=["POST"])
 def criar_usuario():
@@ -33,8 +33,8 @@ def criar_usuario():
         usuario_encontrado = get_user(usuario.matricula)
         if len(usuario_encontrado) == 0:
             insert_user(usuario)
-            return jsonify({"status_code": 201, "content": {}})
+            return jsonify({"content": {}}),201
         else:
-            return jsonify({"status_code": 500, "content": {}})
+            return jsonify({"content": {}}),500
     except Exception:
-        return jsonify({"status_code": 409, "detail": "Erro ao inserir usuário"})
+        return jsonify({"detail": "Erro ao inserir usuário"}),409

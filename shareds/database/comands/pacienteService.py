@@ -1,6 +1,8 @@
+import csv
 from shareds.database.conn import get_connection
 from flask import jsonify
 from entities.paciente import Paciente
+from predictions.predict import predict_and_explain
 
 def insert_paciente(data: Paciente):
     try:
