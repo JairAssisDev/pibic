@@ -11,7 +11,7 @@ services:
       - db
       
   db:
-    image: mysql
+    image: mysql:8.4.0-oraclelinux9
     volumes:
       - ./init_db_paciente.sql:/docker-entrypoint-initdb.d/init_db_paciente.sql
       - ./init_db_users.sql:/docker-entrypoint-initdb.d/init_db_users.sql
