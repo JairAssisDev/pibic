@@ -1,4 +1,6 @@
 import csv
+from io import BytesIO
+import pandas as pd
 from io import StringIO
 from entities.paciente import Paciente
 from flask import Blueprint, request, jsonify
@@ -98,6 +100,7 @@ def use_set_pacientes_com_cvs():
         csv_data = StringIO(file_data)
 
         reader = csv.reader(csv_data)
+        lista_de_pacieentes_n_salvos=[]
         for row in reader:
             if row[0] == 'nome':
                 continue
@@ -114,13 +117,57 @@ def use_set_pacientes_com_cvs():
         }
             instance = Paciente(**data)            
             instance.nome = instance.nome.lower()
-            dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
-            instance.probability = dados["true_probability"]
-            instance.prediction = dados["prediction"]
-            instance.imagem = dados["lime_image"]
-            insert_paciente(instance)
-
-        return jsonify({"message": "Arquivo resultado.csv salvo com sucesso!"})
+            paciente = verificar_paciente(instance.nome, instance.cpf)
+            if not paciente:
+                dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
+                instance.probability = dados["true_probability"]
+                instance.prediction = dados["prediction"]
+                instance.imagem = dados["lime_image"]
+                insert_paciente(instance)
+            else:
+                lista_de_pacieentes_n_salvos.append(data)
+        return jsonify({"message": "Arquivo resultado.csv salvo com sucesso!","pacientesnaosalvos":lista_de_pacieentes_n_salvos})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+@paciente_bp.route("/uploadxlsx", methods=["POST"])
+def use_set_pacientes_com_xlsx():
+    try:
+        file = request.files['file']
+
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        file_data = file.read()
+
+        # Lendo o arquivo XLSX usando pandas
+        xlsx_data = pd.read_excel(BytesIO(file_data))
+        lista_de_pacieentes_n_salvos=[]
+        for index, row in xlsx_data.iterrows():
+            if row['nome'] == 'nome':
+                continue
+            print(row['nome'])
+            data = {
+                "nome": str(row['nome']),
+                "cpf": str(row['cpf']),
+                "sex": int(row['sex']),
+                "redo": int(row['redo']),
+                "cpb": int(row['cpb']),
+                "age": int(row['age']),
+                "bsa": float(row['bsa']),
+                "hb": float(row['hb'])
+            }
+            instance = Paciente(**data)
+            instance.nome = instance.nome.lower()
+            paciente = verificar_paciente(instance.nome, instance.cpf)
+            if not paciente:
+                dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
+                instance.probability = dados["true_probability"]
+                instance.prediction = dados["prediction"]
+                instance.imagem = dados["lime_image"]
+                insert_paciente(instance)
+            else:
+                lista_de_pacieentes_n_salvos.append(data)
+        return jsonify({"message": "Arquivo resultado.xlsx salvo com sucesso!","pacientesnaosalvos":lista_de_pacieentes_n_salvos})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
