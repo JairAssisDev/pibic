@@ -104,7 +104,6 @@ def use_set_pacientes_com_cvs():
         for row in reader:
             if row[0] == 'nome':
                 continue
-            print(row[0])
             data={
                 "nome": str(row[0]),
                 "cpf": str(row[1]),
@@ -114,7 +113,7 @@ def use_set_pacientes_com_cvs():
                 "age": int(row[5]),
                 "bsa": float(row[6]),
                 "hb": float(row[7])
-        }
+            }
             instance = Paciente(**data)            
             instance.nome = instance.nome.lower()
             paciente = verificar_paciente(instance.nome, instance.cpf)
