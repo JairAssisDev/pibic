@@ -61,6 +61,21 @@ def paciente_get_all():
         if 'conexao' in locals():
             conn.close()
 
+def paciente_prob_get_all():
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        query = f"SELECT nome, cpf, sex, redo, cpb, age, bsa, hb, probability, prediction FROM paciente ORDER BY probability DESC;"
+        cursor.execute(query)
+        data = cursor.fetchall()
+        return data
+    except Exception as e:
+        raise
+    finally:
+        if 'conexao' in locals():
+            conn.close()
+
+
 def get_by_name_cpf(nome,cpf):
     try:
         conn = get_connection()

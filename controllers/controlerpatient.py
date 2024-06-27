@@ -36,6 +36,15 @@ def get_all_pacientes():
         return jsonify({"pacientes": pacientes},200)
     except Exception as e:
         return jsonify({'menssage':'pacente não existe ou foi encontrado'}),401
+    
+
+@paciente_bp.route("/getproballpacientes", methods=["GET"])
+def get_prob_all_pacientes():
+    try:
+        pacientes = paciente_prob_get_all()
+        return jsonify({"pacientes": pacientes},200)
+    except Exception as e:
+        return jsonify({'menssage':'pacente não existe ou foi encontrado'}),401
 
 @paciente_bp.route("/<nome>/<cpf>", methods=["GET"])
 def get_paciente(nome,cpf):
@@ -125,7 +134,11 @@ def use_set_pacientes_com_cvs():
                 insert_paciente(instance)
             else:
                 lista_de_pacieentes_n_salvos.append(data)
-        return jsonify({"message": "Arquivo resultado.csv salvo com sucesso!","pacientesnaosalvos":lista_de_pacieentes_n_salvos})
+        if(not lista_de_pacieentes_n_salvos):
+            return jsonify({"message": "Arquivo no csv foram salvo com sucesso!"},200)
+        return jsonify({"message":"Parte dos pacientes foram salvos com sucesso.","naosalvos":lista_de_pacieentes_n_salvos}, 207)
+
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -167,6 +180,8 @@ def use_set_pacientes_com_xlsx():
                 insert_paciente(instance)
             else:
                 lista_de_pacieentes_n_salvos.append(data)
-        return jsonify({"message": "Arquivo resultado.xlsx salvo com sucesso!","pacientesnaosalvos":lista_de_pacieentes_n_salvos})
+        if(not lista_de_pacieentes_n_salvos):
+            return jsonify({"message": "Arquivo no xlsx foram salvo com sucesso!"},200)
+        return jsonify({"message":"Parte dos pacientes foram salvos com sucesso.","naosalvos":lista_de_pacieentes_n_salvos}, 207)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
