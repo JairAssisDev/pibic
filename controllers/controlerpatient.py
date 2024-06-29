@@ -134,10 +134,9 @@ def use_set_pacientes_com_cvs():
                 insert_paciente(instance)
             else:
                 lista_de_pacieentes_n_salvos.append(data)
-        if(not lista_de_pacieentes_n_salvos):
-            return jsonify({"message": "Arquivo no csv foram salvo com sucesso!"},200)
-        return jsonify({"message":"Parte dos pacientes foram salvos com sucesso.","naosalvos":lista_de_pacieentes_n_salvos}, 207)
-
+        if(len(lista_de_pacieentes_n_salvos)==0):
+            return jsonify({"message": "Arquivo no csv foram salvo com sucesso!"}),200
+        return jsonify({"message":"Parte dos pacientes foram salvos com sucesso.","naosalvos":lista_de_pacieentes_n_salvos}), 207
         
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -151,8 +150,6 @@ def use_set_pacientes_com_xlsx():
             return jsonify({"error": "No selected file"}), 400
 
         file_data = file.read()
-
-        # Lendo o arquivo XLSX usando pandas
         xlsx_data = pd.read_excel(BytesIO(file_data))
         lista_de_pacieentes_n_salvos=[]
         for index, row in xlsx_data.iterrows():
@@ -180,8 +177,8 @@ def use_set_pacientes_com_xlsx():
                 insert_paciente(instance)
             else:
                 lista_de_pacieentes_n_salvos.append(data)
-        if(not lista_de_pacieentes_n_salvos):
-            return jsonify({"message": "Arquivo no xlsx foram salvo com sucesso!"},200)
-        return jsonify({"message":"Parte dos pacientes foram salvos com sucesso.","naosalvos":lista_de_pacieentes_n_salvos}, 207)
+        if(len(lista_de_pacieentes_n_salvos)==0):
+            return jsonify({"message": "Arquivo no xlsx foram salvo com sucesso!","naosalvos":lista_de_pacieentes_n_salvos}),200
+        return jsonify({"message":"Parte dos pacientes foram salvos com sucesso.","naosalvos":lista_de_pacieentes_n_salvos}), 207
     except Exception as e:
         return jsonify({"error": str(e)}), 400
