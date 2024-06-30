@@ -15,13 +15,11 @@ services:
     volumes:
       - ./init_db_paciente.sql:/docker-entrypoint-initdb.d/init_db_paciente.sql
       - ./init_db_users.sql:/docker-entrypoint-initdb.d/init_db_users.sql
-
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: IFPEBPT
       MYSQL_USER: IFPEBPT
       MYSQL_PASSWORD: IFPEBPT      
-    restart: always
     ports:
       - "3306:3306"
   
