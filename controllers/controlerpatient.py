@@ -151,11 +151,11 @@ def use_set_pacientes_com_xlsx():
 
         file_data = file.read()
         xlsx_data = pd.read_excel(BytesIO(file_data))
+        xlsx_data.head(5)
         lista_de_pacieentes_n_salvos=[]
         for index, row in xlsx_data.iterrows():
             if row['nome'] == 'nome':
                 continue
-            print(row['nome'])
             data = {
                 "nome": str(row['nome']),
                 "cpf": str(row['cpf']),
