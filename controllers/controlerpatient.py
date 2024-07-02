@@ -5,7 +5,7 @@ from io import StringIO
 from entities.paciente import Paciente
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
-from predictions.predict import predict_and_explain
+from predictions.predict import predict_and_explain , predict_and_explain_image
 from shareds.database.comands.pacienteService import *
 
 paciente_bp = Blueprint('paciente', __name__, url_prefix='/paciente')
@@ -20,7 +20,6 @@ def create_paciente():
         dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
         instance.probability = dados["true_probability"]
         instance.prediction = dados["prediction"]
-        instance.imagem = dados["lime_image"]
         insert_paciente(instance)
         return jsonify({'message': 'Paciente criado com sucesso'}), 201
     except ValidationError as e:
@@ -54,11 +53,18 @@ def get_paciente(nome,cpf):
     return jsonify({'message': 'Paciente não encontrado'}), 404
 
 @paciente_bp.route("/img/<nome>/<cpf>", methods=["GET"])
-def get_imagem_paciente(nome,cpf):
-    paciente = get_img_by_name_cpf(nome,cpf)
+def get_imagem_paciente(nome, cpf):
+    paciente = get_by_name_cpf(nome, cpf)
     if paciente:
-        return jsonify({"message":paciente}),200
+        instance = Paciente(**paciente)
+        dados = predict_and_explain_image(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
+        instance.probability = str(dados["true_probability"])
+        instance.prediction = str(dados["prediction"])
+        instance.imagem = dados["lime_image"]
+        return jsonify({"nome": instance.nome, "imagem": instance.imagem}), 200
     return jsonify({'message': 'Paciente não encontrado'}), 404
+
+
     
 @paciente_bp.route("/<nome>/<cpf>", methods=["DELETE"])
 def delete_paciente(nome,cpf):
@@ -82,7 +88,6 @@ def use_update_paciente(nome, cpf):
         dados = predict_and_explain(patient_data.sex, patient_data.redo, patient_data.cpb, patient_data.age, patient_data.bsa, patient_data.hb)
         patient_data.probability = dados["true_probability"]
         patient_data.prediction = dados["prediction"]
-        patient_data.imagem = dados["lime_image"]
         update_paciente(nome, cpf, patient_data)
         response_data = {
             "message": "Paciente atualizado com sucesso",
@@ -130,7 +135,6 @@ def use_set_pacientes_com_cvs():
                 dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
                 instance.probability = dados["true_probability"]
                 instance.prediction = dados["prediction"]
-                instance.imagem = dados["lime_image"]
                 insert_paciente(instance)
             else:
                 lista_de_pacieentes_n_salvos.append(data)
@@ -151,11 +155,11 @@ def use_set_pacientes_com_xlsx():
 
         file_data = file.read()
         xlsx_data = pd.read_excel(BytesIO(file_data))
-        xlsx_data.head(5)
         lista_de_pacieentes_n_salvos=[]
         for index, row in xlsx_data.iterrows():
             if row['nome'] == 'nome':
                 continue
+            print(row['nome'])
             data = {
                 "nome": str(row['nome']),
                 "cpf": str(row['cpf']),
@@ -173,7 +177,6 @@ def use_set_pacientes_com_xlsx():
                 dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
                 instance.probability = dados["true_probability"]
                 instance.prediction = dados["prediction"]
-                instance.imagem = dados["lime_image"]
                 insert_paciente(instance)
             else:
                 lista_de_pacieentes_n_salvos.append(data)

@@ -9,11 +9,11 @@ def insert_paciente(data: Paciente):
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
         query = '''
-                INSERT INTO paciente ( nome, cpf, sex, redo, cpb, age, bsa, hb, probability, prediction, imagem
+                INSERT INTO paciente ( nome, cpf, sex, redo, cpb, age, bsa, hb, probability, prediction
                 ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 );'''
-        cursor.execute(query, (data.nome, data.cpf, data.sex, data.redo, data.cpb, data.age, data.bsa, data.hb, data.probability, data.prediction, data.imagem))
+        cursor.execute(query, (data.nome, data.cpf, data.sex, data.redo, data.cpb, data.age, data.bsa, data.hb, data.probability, data.prediction))
         conn.commit()
     except Exception as e:
         print(f"Error inserting patient: {e}")
@@ -29,11 +29,11 @@ def update_paciente(nome_original: str, cpf_original: str, data: Paciente):
         query = """
             UPDATE paciente
             SET nome = %s, cpf = %s, sex = %s, redo = %s, cpb = %s, age = %s, bsa = %s, hb = %s,
-                probability = %s, prediction = %s, imagem = %s
+                probability = %s, prediction = %s
             WHERE nome = %s AND cpf = %s
         """
         cursor.execute(query, (data.nome, data.cpf, data.sex, data.redo, data.cpb, data.age, data.bsa, data.hb,
-                                data.probability, data.prediction, data.imagem, nome_original, cpf_original))
+                                data.probability, data.prediction, nome_original, cpf_original))
         conn.commit()
         rows_affected = cursor.rowcount
         if rows_affected == 0:
@@ -76,23 +76,28 @@ def paciente_prob_get_all():
             conn.close()
 
 
-def get_by_name_cpf(nome,cpf):
+def get_by_name_cpf(nome, cpf):
     try:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
         query = """
-            select nome, cpf, sex, redo, cpb, age, bsa, hb, probability, prediction,imagem
-            from paciente
-            where nome = %s AND cpf = %s
+            SELECT nome, cpf, sex, redo, cpb, age, bsa, hb, probability, prediction
+            FROM paciente
+            WHERE nome = %s AND cpf = %s
         """
-        cursor.execute(query,(nome,cpf,))
-        data = cursor.fetchall()
+        cursor.execute(query, (nome, cpf,))
+        data = cursor.fetchone()  # Use fetchone para obter apenas um registro
+        if data:
+            data['probability'] = str(data['probability'])
+            data['prediction'] = str(data['prediction'])
         return data
     except Exception as e:
         raise
     finally:
-        if 'conexao' in locals():
+        if 'conn' in locals():
             conn.close()
+
+
 
 def get_img_by_name_cpf(nome,cpf):
     try:

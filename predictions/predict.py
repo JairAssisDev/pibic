@@ -56,6 +56,19 @@ def predict_and_explain(sex, redo, cpb, age, bsa, hb):
     prediction = bool(model.predict([instance])[0])
     true_prob = prediction_proba[1]
     
+    return {
+        "prediction": prediction,
+        "true_probability": true_prob,
+    }
+
+def predict_and_explain_image(sex, redo, cpb, age, bsa, hb):
+    sex, redo, cpb = encode_categorical(sex, redo, cpb)
+    instance = [sex, age, bsa, redo, cpb, hb]
+    prediction_proba = model.predict_proba([instance])[0]
+    
+    prediction = bool(model.predict([instance])[0])
+    true_prob = prediction_proba[1]
+    
     exp = explain_instance(instance)
     features, values = prepare_features_and_values(exp)
     colors = assign_colors(values)
