@@ -96,7 +96,6 @@ def use_update_paciente(nome, cpf):
         return jsonify(response_data), 200
 
     except Exception as e:
-        print(f"Error updating patient: {e}")
         return jsonify({'error': "Erro ao atualizar paciente:"+str(e)}), 400
 
 
@@ -159,7 +158,6 @@ def use_set_pacientes_com_xlsx():
         for index, row in xlsx_data.iterrows():
             if row['nome'] == 'nome':
                 continue
-            print(row['nome'])
             data = {
                 "nome": str(row['nome']),
                 "cpf": str(row['cpf']),
