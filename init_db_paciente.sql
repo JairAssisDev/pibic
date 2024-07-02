@@ -5,12 +5,11 @@ CREATE TABLE IF NOT EXISTS paciente(
     nome VARCHAR(120) NOT NULL,
     cpf VARCHAR(11) NOT NULL UNIQUE,
     sex TINYINT NOT NULL,
-    redo INT NOT NULL,
-    cpb INT NOT NULL, 
+    redo TINYINT NOT NULL,
+    cpb TINYINT NOT NULL, 
     age INT NOT NULL,
     bsa FLOAT NOT NULL,
     hb FLOAT NOT NULL,
     probability FLOAT,
-    prediction FLOAT,
-    imagem TEXT
+    prediction FLOAT
 );

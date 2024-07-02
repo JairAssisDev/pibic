@@ -99,7 +99,7 @@ def get_by_name_cpf(nome, cpf):
 
 
 
-def get_img_by_name_cpf(nome,cpf):
+'''def get_img_by_name_cpf(nome,cpf):
     try:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
@@ -115,7 +115,7 @@ def get_img_by_name_cpf(nome,cpf):
         raise
     finally:
         if 'conexao' in locals():
-            conn.close()
+            conn.close()'''
 
 def verificar_paciente(nome,cpf):
     try:
