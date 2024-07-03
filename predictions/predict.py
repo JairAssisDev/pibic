@@ -10,7 +10,7 @@ import base64
 
 matplotlib.use('Agg')
 
-model = joblib.load("model_ML/RF.joblib")
+model = joblib.load("model_ML/LR.joblib")
 train = pd.read_csv("files/X_train.csv", usecols=range(1, 7)).to_numpy()
 class_names = model.classes_
 feature_names= model.feature_names_in_

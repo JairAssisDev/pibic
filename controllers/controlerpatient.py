@@ -1,4 +1,5 @@
 import csv
+from flask import send_file
 from io import BytesIO
 import pandas as pd
 from io import StringIO
@@ -99,66 +100,35 @@ def use_update_paciente(nome, cpf):
         return jsonify({'error': "Erro ao atualizar paciente:"+str(e)}), 400
 
 
-@paciente_bp.route("/uploadcsv", methods=["POST"])
-def use_set_pacientes_com_cvs():
-    try:
 
+@paciente_bp.route("/upload", methods=["POST"])
+def upload_pacientes():
+    try:
         file = request.files['file']
 
         if file.filename == '':
             return jsonify({"error": "No selected file"}), 400
 
-        file_data = file.read().decode('utf-8')
-
-        csv_data = StringIO(file_data)
-
-        reader = csv.reader(csv_data)
-        lista_de_pacieentes_n_salvos=[]
-        for row in reader:
-            if row[0] == 'nome':
-                continue
-            data={
-                "nome": str(row[0]),
-                "cpf": str(row[1]),
-                "sex": int(row[2]),
-                "redo": int(row[3]),
-                "cpb": int(row[4]),
-                "age": int(row[5]),
-                "bsa": float(row[6]),
-                "hb": float(row[7])
-            }
-            instance = Paciente(**data)            
-            instance.nome = instance.nome.lower()
-            paciente = verificar_paciente(instance.nome, instance.cpf)
-            if not paciente:
-                dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
-                instance.probability = dados["true_probability"]
-                instance.prediction = dados["prediction"]
-                insert_paciente(instance)
-            else:
-                lista_de_pacieentes_n_salvos.append(data)
-        if(len(lista_de_pacieentes_n_salvos)==0):
-            return jsonify({"message": "Arquivo no csv foram salvo com sucesso!"}),200
-        return jsonify({"message":"Parte dos pacientes foram salvos com sucesso.","naosalvos":lista_de_pacieentes_n_salvos}), 207
+        file_extension = file.filename.split('.')[-1].lower()
         
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        if file_extension == 'csv':
+            file_data = file.read().decode('utf-8')
+            data = pd.read_csv(StringIO(file_data))
+        elif file_extension == 'xlsx':
+            file_data = file.read()
+            data = pd.read_excel(BytesIO(file_data))
+        elif file_extension == 'xls':
+            file_data = file.read()
+            data = pd.read_excel(BytesIO(file_data), engine='xlrd')
+        else:
+            return jsonify({"error": "Unsupported file type"}), 400
 
-@paciente_bp.route("/uploadxlsx", methods=["POST"])
-def use_set_pacientes_com_xlsx():
-    try:
-        file = request.files['file']
-
-        if file.filename == '':
-            return jsonify({"error": "No selected file"}), 400
-
-        file_data = file.read()
-        xlsx_data = pd.read_excel(BytesIO(file_data))
-        lista_de_pacieentes_n_salvos=[]
-        for index, row in xlsx_data.iterrows():
-            if row['nome'] == 'nome':
+        lista_de_pacieentes_n_salvos = []
+        
+        for index, row in data.iterrows():
+            if row['nome'].lower() == 'nome':
                 continue
-            data = {
+            data_dict = {
                 "nome": str(row['nome']),
                 "cpf": str(row['cpf']),
                 "sex": int(row['sex']),
@@ -168,7 +138,7 @@ def use_set_pacientes_com_xlsx():
                 "bsa": float(row['bsa']),
                 "hb": float(row['hb'])
             }
-            instance = Paciente(**data)
+            instance = Paciente(**data_dict)
             instance.nome = instance.nome.lower()
             paciente = verificar_paciente(instance.nome, instance.cpf)
             if not paciente:
@@ -177,9 +147,87 @@ def use_set_pacientes_com_xlsx():
                 instance.prediction = dados["prediction"]
                 insert_paciente(instance)
             else:
-                lista_de_pacieentes_n_salvos.append(data)
-        if(len(lista_de_pacieentes_n_salvos)==0):
-            return jsonify({"message": "Arquivo no xlsx foram salvo com sucesso!","naosalvos":lista_de_pacieentes_n_salvos}),200
-        return jsonify({"message":"Parte dos pacientes foram salvos com sucesso.","naosalvos":lista_de_pacieentes_n_salvos}), 207
+                lista_de_pacieentes_n_salvos.append(data_dict)
+
+        if len(lista_de_pacieentes_n_salvos) == 0:
+            return jsonify({"message": "Arquivo salvo com sucesso!"}), 200
+        return jsonify({"message": "Parte dos pacientes foram salvos com sucesso.", "naosalvos": lista_de_pacieentes_n_salvos}), 207
+
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+'''
+
+
+
+@paciente_bp.route("/upload", methods=["POST"])
+def upload_pacientes():
+    try:
+        file = request.files['file']
+
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        # Identifica a extensão do arquivo
+        file_extension = file.filename.split('.')[-1].lower()
+        
+        if file_extension == 'csv':
+            file_data = file.read().decode('utf-8')
+            data = pd.read_csv(StringIO(file_data))
+        elif file_extension in ['xlsx', 'xls']:
+            file_data = file.read()
+            data = pd.read_excel(BytesIO(file_data))
+        else:
+            return jsonify({"error": "Unsupported file type"}), 400
+
+        lista_de_pacieentes_n_salvos = []
+        
+        for index, row in data.iterrows():
+            if row['nome'].lower() == 'nome':
+                continue
+            data_dict = {
+                "nome": str(row['nome']),
+                "cpf": str(row['cpf']),
+                "sex": int(row['sex']),
+                "redo": int(row['redo']),
+                "cpb": int(row['cpb']),
+                "age": int(row['age']),
+                "bsa": float(row['bsa']),
+                "hb": float(row['hb'])
+            }
+            instance = Paciente(**data_dict)
+            instance.nome = instance.nome.lower()
+            paciente = verificar_paciente(instance.nome, instance.cpf)
+            if not paciente:
+                dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
+                instance.probability = dados["true_probability"]
+                instance.prediction = dados["prediction"]
+                insert_paciente(instance)
+            else:
+                lista_de_pacieentes_n_salvos.append(data_dict)
+
+        if len(lista_de_pacieentes_n_salvos) == 0:
+            # Criar um DataFrame vazio para evitar erro ao criar o arquivo Excel
+            df_vazio = pd.DataFrame()
+            output = BytesIO()
+            writer = pd.ExcelWriter(output, engine='xlsxwriter')
+            df_vazio.to_excel(writer, index=False, sheet_name='Pacientes_nao_salvos')
+            writer.save()
+            output.seek(0)
+            return send_file(output, attachment_filename='pacientes_nao_salvos.xlsx', as_attachment=True), 200
+        
+        # Criar DataFrame com pacientes não salvos
+        df_nao_salvos = pd.DataFrame(lista_de_pacieentes_n_salvos)
+        output = BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        df_nao_salvos.to_excel(writer, index=False, sheet_name='Pacientes_nao_salvos')
+        writer.save()
+        output.seek(0)
+        
+        return send_file(output, attachment_filename='pacientes_nao_salvos.xlsx', as_attachment=True), 207
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+        '''
