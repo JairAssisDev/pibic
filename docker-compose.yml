@@ -22,5 +22,3 @@ services:
       MYSQL_PASSWORD: IFPEBPT      
     ports:
       - "3306:3306"
-  
-
