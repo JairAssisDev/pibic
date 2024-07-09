@@ -4,19 +4,25 @@ from io import BytesIO
 import pandas as pd
 from io import StringIO
 from entities.paciente import Paciente
+from shareds.jwt.main import decode,encode
+
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 from predictions.predict import predict_and_explain , predict_and_explain_image
 from shareds.database.comands.pacienteService import *
 
-paciente_bp = Blueprint('paciente', __name__, url_prefix='/paciente')
+def updatetoken(decrypted_token):
+    updated_token = encode(decrypted_token)
+    return updated_token
 
+
+paciente_bp = Blueprint('paciente', __name__, url_prefix='/paciente')
 @paciente_bp.route("", methods=["POST"])
 def create_paciente():
     try:
         data = request.get_json()
-        instance = Paciente(**data)
-        
+        instance = Paciente(**data[0])
+
         instance.nome = instance.nome.lower()
         dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
         instance.probability = dados["true_probability"]
