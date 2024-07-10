@@ -113,7 +113,7 @@ def upload_pacientes():
         file = request.files['file']
 
         if file.filename == '':
-            return jsonify({"error": "No selected file"}), 400
+            return jsonify({"error": "No selected file"}), 401
 
         file_extension = file.filename.split('.')[-1].lower()
 
@@ -127,7 +127,7 @@ def upload_pacientes():
             file_data = file.read()
             data = pd.read_excel(BytesIO(file_data), engine='xlrd')
         else:
-            return jsonify({"error": "Unsupported file type"}), 400
+            return jsonify({"error": "Unsupported file type"}), 402
 
         lista_de_pacientes_n_salvos = []
 
