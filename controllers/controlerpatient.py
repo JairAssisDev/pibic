@@ -11,24 +11,36 @@ from pydantic import ValidationError
 from predictions.predict import predict_and_explain , predict_and_explain_image
 from shareds.database.comands.pacienteService import *
 
-def updatetoken(decrypted_token):
-    updated_token = encode(decrypted_token)
-    return updated_token
+def update_token(decrypted_token):
+    try:
 
+        updated_token = encode(decrypted_token)
+        return updated_token
+    except Exception as e:
+        return {"sub":"token expired"}
+def validate_token(token):
+    try:
+        token = decode(token)
+        return token
+    except Exception as e:
+        return {"sub":"token expired"}
 
 paciente_bp = Blueprint('paciente', __name__, url_prefix='/paciente')
 @paciente_bp.route("", methods=["POST"])
 def create_paciente():
     try:
         data = request.get_json()
-        instance = Paciente(**data[0])
-
+        token=validate_token(data.token)
+        '''if token["sub"] == "token expired":
+            return jsonify({"message":token["sub"]})
+        new_token= update_token(token["sub"])'''
+        instance = Paciente(**data.paciente)
         instance.nome = instance.nome.lower()
         dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
         instance.probability = dados["true_probability"]
         instance.prediction = dados["prediction"]
         insert_paciente(instance)
-        return jsonify({'message': 'Paciente criado com sucesso'}), 201
+        return jsonify({'message': 'Paciente criado com sucesso',"token":"new_token"}), 201
     except ValidationError as e:
         return jsonify({'message': 'Erro na validação dos dados', 'error': e.errors()}), 422
     except Exception as e:
