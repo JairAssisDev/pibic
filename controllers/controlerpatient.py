@@ -21,7 +21,7 @@ paciente_bp = Blueprint('paciente', __name__, url_prefix='/paciente')
 def create_paciente():
     try:
         data = request.get_json()
-        instance = Paciente(**data[0])
+        instance = Paciente(**data)
 
         instance.nome = instance.nome.lower()
         dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
