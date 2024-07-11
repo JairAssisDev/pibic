@@ -52,16 +52,16 @@ def get_prob_all_pacientes():
     except Exception as e:
         return jsonify({'menssage':'pacente não existe ou foi encontrado'}),401
 
-@paciente_bp.route("/<nome>/<cpf>", methods=["GET"])
-def get_paciente(nome,cpf):
-    paciente = get_by_name_cpf(nome,cpf)
+@paciente_bp.route("/<cpf>", methods=["GET"])
+def get_paciente(cpf):
+    paciente = get_by_name_cpf(cpf)
     if paciente:
         return jsonify({"message":paciente}),200
     return jsonify({'message': 'Paciente não encontrado'}), 404
 
-@paciente_bp.route("/img/<nome>/<cpf>", methods=["GET"])
-def get_imagem_paciente(nome, cpf):
-    paciente = get_by_name_cpf(nome, cpf)
+@paciente_bp.route("/img/<cpf>", methods=["GET"])
+def get_imagem_paciente(cpf):
+    paciente = get_by_name_cpf(cpf)
     if paciente:
         instance = Paciente(**paciente)
         dados = predict_and_explain_image(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
@@ -73,19 +73,19 @@ def get_imagem_paciente(nome, cpf):
 
 
     
-@paciente_bp.route("/<nome>/<cpf>", methods=["DELETE"])
-def delete_paciente(nome,cpf):
-    paciente = verificar_paciente(nome,cpf)
+@paciente_bp.route("/delete/<cpf>", methods=["DELETE"])
+def delete_paciente(cpf):
+    paciente = verificar_paciente(cpf)
     if paciente:
-        delete_paciente_by_name_and_cpf(nome,cpf)
+        delete_paciente_by_name_and_cpf(cpf)
         return jsonify({'message': 'Paciente deletado com sucesso'})
     return jsonify({'message': 'Paciente não encontrado'}), 404
 
 
-@paciente_bp.route("/<nome>/<cpf>", methods=["PUT"])
-def use_update_paciente(nome, cpf):
+@paciente_bp.route("/update/<cpf>", methods=["PUT"])
+def use_update_paciente(cpf):
     data = request.get_json()
-    paciente = verificar_paciente(nome, cpf)
+    paciente = verificar_paciente(cpf)
     if not paciente:
         return jsonify({'message': 'Paciente não encontrado'}), 404
 
@@ -95,7 +95,7 @@ def use_update_paciente(nome, cpf):
         dados = predict_and_explain(patient_data.sex, patient_data.redo, patient_data.cpb, patient_data.age, patient_data.bsa, patient_data.hb)
         patient_data.probability = dados["true_probability"]
         patient_data.prediction = dados["prediction"]
-        update_paciente(nome, cpf, patient_data)
+        update_paciente(cpf, patient_data)
         response_data = {
             "message": "Paciente atualizado com sucesso",
             "data": dados
