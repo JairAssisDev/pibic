@@ -146,7 +146,7 @@ def upload_pacientes():
             }
             instance = Paciente(**data_dict)
             instance.nome = instance.nome.lower()
-            paciente = verificar_paciente(instance.nome, instance.cpf)
+            paciente = verificar_paciente( instance.cpf)
             if not paciente:
                 dados = predict_and_explain(instance.sex, instance.redo, instance.cpb, instance.age, instance.bsa, instance.hb)
                 instance.probability = dados["true_probability"]
